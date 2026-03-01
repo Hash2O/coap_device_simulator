@@ -1,4 +1,4 @@
-Version 1 - Proposition complète d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
+# Version 1 - Proposition complète d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
 
 - CoAP over UDP (pas HTTP)
 - Port 5683
@@ -8,7 +8,7 @@ Version 1 - Proposition complète d’un Device Simulator IoT en Node.js respect
 - Simulation d’instabilité (latence, perte, offline)
 - Lancement simple
 
-Arobrescence : 
+## Arborescence : 
     device-simulator/
     │
     ├── package.json
@@ -16,12 +16,12 @@ Arobrescence :
     ├── main.js
     └── node_modules/
 
-Librairie officielle :
+## Librairie officielle :
 
 - Node.js Foundation
 - CoAP (via le module npm coap)
 
-Options disponibles :
+## Options disponibles :
 
     Option	    Description
     --name	    Nom du device
@@ -29,22 +29,19 @@ Options disponibles :
     --loss	    Taux de perte (0.0 → 1.0)
     --offline	Mode offline (true/false)
 
-Exemple de test avec coap-client :
+## Exemple de test avec coap-client :
 - coap get coap://localhost:5683/health
 - coap get coap://localhost:5683/temperature
 
-=> echo '{"value":22.5}' | coap put coap://localhost:5683/temperature
+### echo '{"value":22.5}' | coap put coap://localhost:5683/temperature
 
-Version 2 - Découverte automatique des devices : Multicast UDP / CoAP announce
-=> Temps réel
-=> Pas besoin de scanner tout le réseau
-=> Plus proche d’un vrai système IoT
-=> Plus élégant
+# Version 2 - Découverte automatique des devices : Multicast UDP / CoAP announce
+=> Temps réel, pas besoin de scanner tout le réseau, plus proche d’un vrai système IoT, plus élégant
 
-Résultat attendu : 
-=> Lancement du serveur CoAP sur le port 5683
-=> Exposition : 
+## Résultat attendu : 
+### Lancement du serveur CoAP sur le port 5683
+### Exposition : 
     - GET /health
     - GET /temperature
     - PUT /temperature
-=> Envoi d'une announce multicast toutes les 3 secondes.
+### Envoi d'une announce multicast toutes les 3 secondes.
