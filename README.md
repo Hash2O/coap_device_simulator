@@ -1,4 +1,4 @@
-Proposition complète d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
+Version 1 - Proposition complète d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
 
 - CoAP over UDP (pas HTTP)
 - Port 5683
@@ -34,3 +34,17 @@ Exemple de test avec coap-client :
 - coap get coap://localhost:5683/temperature
 
 => echo '{"value":22.5}' | coap put coap://localhost:5683/temperature
+
+Version 2 - Découverte automatique des devices : Multicast UDP / CoAP announce
+=> Temps réel
+=> Pas besoin de scanner tout le réseau
+=> Plus proche d’un vrai système IoT
+=> Plus élégant
+
+Résultat attendu : 
+=> Lancement du serveur CoAP sur le port 5683
+=> Exposition : 
+    - GET /health
+    - GET /temperature
+    - PUT /temperature
+=> Envoi d'une announce multicast toutes les 3 secondes.
