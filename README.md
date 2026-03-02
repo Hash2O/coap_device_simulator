@@ -45,3 +45,7 @@
     - GET /temperature
     - PUT /temperature
 ### Envoi d'une announce multicast toutes les 3 secondes.
+
+### Exemples de création de devices :
+    DEVICE_ID=device1 DEVICE_NAME="Salon" node main.js
+    DEVICE_ID=device2 DEVICE_NAME="Cuisine" node main.js

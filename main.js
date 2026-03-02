@@ -6,18 +6,25 @@ const os = require('os');
 const crypto = require('crypto');
 
 // =============================
-// Configuration
+// Configuration dynamique
 // =============================
 
-const COAP_PORT = 5683;
+const COAP_PORT = parseInt(process.env.PORT) || 5683;
 const MULTICAST_ADDR = '239.255.255.250';
 const MULTICAST_PORT = 5684;
 const ANNOUNCE_INTERVAL_MS = 3000;
 
-const deviceId = crypto.randomUUID();
-const deviceName = "DeviceSim";
+// Variables d'environnement (avec fallback propre)
 
-let temperature = 22;
+const deviceId =
+  process.env.DEVICE_ID || crypto.randomUUID();
+
+const deviceName =
+  process.env.DEVICE_NAME || `Device-${deviceId.substring(0, 6)}`;
+
+let temperature =
+  parseFloat(process.env.INIT_TEMP) || 22;
+
 const startTime = Date.now();
 
 // =============================
@@ -87,6 +94,9 @@ server.on('request', (req, res) => {
 
 server.listen(COAP_PORT, () => {
   console.log(`CoAP server running on port ${COAP_PORT}`);
+  console.log(`Device ID: ${deviceId}`);
+  console.log(`Device Name: ${deviceName}`);
+  console.log(`Initial temperature: ${temperature}`);
 });
 
 // =============================
@@ -100,6 +110,7 @@ function sendAnnounce() {
     device_id: deviceId,
     name: deviceName,
     ip: getLocalIp(),
+    port: COAP_PORT, // IMPORTANT en cas de gestion multi-port
     ts: Date.now()
   });
 
