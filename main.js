@@ -100,37 +100,49 @@ server.on('request', (req, res) => {
   // ---------- GET TEMPERATURE ----------
   else if (req.url === '/temperature' && req.method === 'GET') {
 
-    respondWithChaos(res, () => JSON.stringify({
-      temperature
-    }));
-  }
+  respondWithChaos(res, () => JSON.stringify({
+    value: temperature,
+    ts: Date.now()
+  }));
+}
 
   // ---------- SET TEMPERATURE ----------
-  else if (req.url === '/temperature' && req.method === 'PUT') {
+else if (req.url === '/temperature' && req.method === 'PUT') {
 
-    let body = '';
+  let body = '';
 
-    req.on('data', chunk => body += chunk);
+  req.on('data', chunk => body += chunk);
 
-    req.on('end', () => {
+  req.on('end', () => {
 
-      respondWithChaos(res, () => {
+    respondWithChaos(res, () => {
 
-        try {
-          const parsed = JSON.parse(body);
-          temperature = parsed.temperature;
+      try {
+        const parsed = JSON.parse(body);
 
-          console.log(`Temperature updated to ${temperature}`);
-
-          return JSON.stringify({ success: true });
-
-        } catch {
+        if (typeof parsed.value !== "number") {
           res.code = '4.00';
-          return JSON.stringify({ error: "Invalid JSON" });
+          return JSON.stringify({ error: "Invalid value" });
         }
-      });
+
+        temperature = parsed.value;
+
+        const responsePayload = {
+          value: temperature,
+          ts: Date.now()
+        };
+
+        console.log(`🌡 Temperature updated to ${temperature}`);
+
+        return JSON.stringify(responsePayload);
+
+      } catch {
+        res.code = '4.00';
+        return JSON.stringify({ error: "Invalid JSON" });
+      }
     });
-  }
+  });
+}
 
   // ---------- CHAOS CONFIG ----------
   else if (req.url === '/chaos' && req.method === 'PUT') {

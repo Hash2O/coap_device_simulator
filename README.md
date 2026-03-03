@@ -21,6 +21,9 @@
 - Node.js Foundation
 - CoAP (via le module npm coap)
 
+## Lancement de base
+    node main.js
+
 ## Options disponibles :
 
     Option	    Description
@@ -32,8 +35,6 @@
 ## Exemple de test avec coap-client :
 - coap get coap://localhost:5683/health
 - coap get coap://localhost:5683/temperature
-
-### echo '{"value":22.5}' | coap put coap://localhost:5683/temperature
 
 # Version 2 - Découverte automatique des devices : Multicast UDP / CoAP announce
 => Temps réel, pas besoin de scanner tout le réseau, plus proche d’un vrai système IoT, plus élégant
