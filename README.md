@@ -61,3 +61,20 @@
     INIT_TEMP=18 DEVICE_ID=Device1  DEVICE_NAME="Chambre" PORT=5683 node main.js
     INIT_TEMP=21 DEVICE_ID=Device2  DEVICE_NAME="Cuisine" PORT=5684 node main.js
     INIT_TEMP=22 DEVICE_ID=Device3  DEVICE_NAME="Salon" PORT=5685 node main.js
+
+# Version 4 : Simulation d'instabilité
+
+    Déjà présent : 
+        DEVICE_ID / DEVICE_NAME personnalisables
+        Port personnalisable
+        Multicast announce
+        ping /health
+        /temperature GET/PUT
+    
+    Ajouts : 
+        /chaos dynamique
+        Latence artificielle
+        Pertes de paquets
+        Mode offline
+        Variables d’environnement
+        Logs explicites

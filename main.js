@@ -1,4 +1,7 @@
-// main.js
+
+// ========================================
+// Device Simulator - Professional Version
+// ========================================
 
 const coap = require('coap');
 const dgram = require('dgram');
@@ -6,29 +9,33 @@ const os = require('os');
 const crypto = require('crypto');
 
 // =============================
-// Configuration dynamique
+// Configuration
 // =============================
 
 const COAP_PORT = parseInt(process.env.PORT) || 5683;
+
 const MULTICAST_ADDR = '239.255.255.250';
 const MULTICAST_PORT = 5684;
 const ANNOUNCE_INTERVAL_MS = 3000;
 
-// Variables d'environnement (avec fallback propre)
+const deviceId = process.env.DEVICE_ID || crypto.randomUUID();
+const deviceName = process.env.DEVICE_NAME || "DeviceSim";
 
-const deviceId =
-  process.env.DEVICE_ID || crypto.randomUUID();
-
-const deviceName =
-  process.env.DEVICE_NAME || `Device-${deviceId.substring(0, 6)}`;
-
-let temperature =
-  parseFloat(process.env.INIT_TEMP) || 22;
-
+let temperature = parseFloat(process.env.INIT_TEMP) || 22;
 const startTime = Date.now();
 
 // =============================
-// Utilitaire : récupérer IP locale
+// Chaos Configuration
+// =============================
+
+let chaos = {
+  latencyMs: parseInt(process.env.CHAOS_LATENCY) || 0,
+  lossRate: parseFloat(process.env.CHAOS_LOSS) || 0,
+  offline: process.env.CHAOS_OFFLINE === "true"
+};
+
+// =============================
+// Utils
 // =============================
 
 function getLocalIp() {
@@ -45,47 +52,114 @@ function getLocalIp() {
   return "0.0.0.0";
 }
 
+function respondWithChaos(res, payloadBuilder) {
+
+  if (chaos.offline) {
+    console.log("Device in OFFLINE mode");
+    return;
+  }
+
+  if (Math.random() < chaos.lossRate) {
+    console.log("Simulated packet loss");
+    return;
+  }
+
+  setTimeout(() => {
+    try {
+      res.end(payloadBuilder());
+    } catch (err) {
+      res.code = '5.00';
+      res.end(JSON.stringify({ error: "Internal error" }));
+    }
+  }, chaos.latencyMs);
+}
+
 // =============================
-// Serveur CoAP
+// CoAP Server
 // =============================
 
 const server = coap.createServer();
 
 server.on('request', (req, res) => {
+
   console.log(`${req.method} ${req.url} from ${req.rsinfo.address}`);
 
+  // ---------- HEALTH ----------
   if (req.url === '/health') {
-    res.end(JSON.stringify({
+
+    respondWithChaos(res, () => JSON.stringify({
       device_id: deviceId,
       name: deviceName,
+      port: COAP_PORT,
       uptime_s: Math.floor((Date.now() - startTime) / 1000),
+      chaos: chaos,
       ts: Date.now()
     }));
   }
 
+  // ---------- GET TEMPERATURE ----------
   else if (req.url === '/temperature' && req.method === 'GET') {
-    res.end(JSON.stringify({
+
+    respondWithChaos(res, () => JSON.stringify({
       temperature
     }));
   }
 
+  // ---------- SET TEMPERATURE ----------
   else if (req.url === '/temperature' && req.method === 'PUT') {
+
     let body = '';
 
     req.on('data', chunk => body += chunk);
 
     req.on('end', () => {
+
+      respondWithChaos(res, () => {
+
+        try {
+          const parsed = JSON.parse(body);
+          temperature = parsed.temperature;
+
+          console.log(`Temperature updated to ${temperature}`);
+
+          return JSON.stringify({ success: true });
+
+        } catch {
+          res.code = '4.00';
+          return JSON.stringify({ error: "Invalid JSON" });
+        }
+      });
+    });
+  }
+
+  // ---------- CHAOS CONFIG ----------
+  else if (req.url === '/chaos' && req.method === 'PUT') {
+
+    let body = '';
+
+    req.on('data', chunk => body += chunk);
+
+    req.on('end', () => {
+
       try {
         const parsed = JSON.parse(body);
-        temperature = parsed.temperature;
-        res.end(JSON.stringify({ success: true }));
-      } catch (err) {
+
+        chaos.latencyMs = parsed.latency_ms ?? chaos.latencyMs;
+        chaos.lossRate = parsed.loss_rate ?? chaos.lossRate;
+        chaos.offline = parsed.offline ?? chaos.offline;
+
+        console.log("Chaos config updated:", chaos);
+
+        res.end(JSON.stringify({ success: true, chaos }));
+
+      } catch {
         res.code = '4.00';
         res.end(JSON.stringify({ error: "Invalid JSON" }));
       }
     });
   }
 
+  // ---------- NOT FOUND ----------
   else {
     res.code = '4.04';
     res.end('Not Found');
@@ -93,24 +167,31 @@ server.on('request', (req, res) => {
 });
 
 server.listen(COAP_PORT, () => {
-  console.log(`CoAP server running on port ${COAP_PORT}`);
-  console.log(`Device ID: ${deviceId}`);
-  console.log(`Device Name: ${deviceName}`);
-  console.log(`Initial temperature: ${temperature}`);
+  console.log("=================================");
+  console.log("Device Simulator Started");
+  console.log("=================================");
+  console.log("Device ID :", deviceId);
+  console.log("Device Name :", deviceName);
+  console.log("Port :", COAP_PORT);
+  console.log("Initial Chaos :", chaos);
+  console.log("=================================");
 });
 
 // =============================
-// Multicast announce
+// Multicast Announce
 // =============================
 
 const announceSocket = dgram.createSocket('udp4');
 
 function sendAnnounce() {
+
+  if (chaos.offline) return;
+
   const message = JSON.stringify({
     device_id: deviceId,
     name: deviceName,
     ip: getLocalIp(),
-    port: COAP_PORT, // IMPORTANT en cas de gestion multi-port
+    port: COAP_PORT,
     ts: Date.now()
   });
 
