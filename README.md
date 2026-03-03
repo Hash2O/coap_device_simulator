@@ -46,6 +46,18 @@
     - PUT /temperature
 ### Envoi d'une announce multicast toutes les 3 secondes.
 
-### Exemples de création de devices :
+### Exemples de création de devices multi-device même port:
     DEVICE_ID=device1 DEVICE_NAME="Salon" node main.js
     DEVICE_ID=device2 DEVICE_NAME="Cuisine" node main.js
+
+# Version 3 : Gestion multi-device, avec options
+
+### Exemples de création de devices multi-device + multi-port
+    DEVICE_ID=device1 DEVICE_NAME="Salon" PORT=5683 node main.js
+    DEVICE_ID=device2 DEVICE_NAME="Cuisine" PORT=5684 node main.js
+    DEVICE_ID=device3 DEVICE_NAME="Chambre" PORT=5685 node main.js
+
+### Exemples de création de devices multi-device + multi-port + Température de départ
+    INIT_TEMP=18 DEVICE_ID=Device1  DEVICE_NAME="Chambre" PORT=5683 node main.js
+    INIT_TEMP=21 DEVICE_ID=Device2  DEVICE_NAME="Cuisine" PORT=5684 node main.js
+    INIT_TEMP=22 DEVICE_ID=Device3  DEVICE_NAME="Salon" PORT=5685 node main.js
