@@ -1,7 +1,7 @@
 # Présentation rapide
     Simulateur de device IoT utilisant le protocole CoAP
 
-# Version 1 - Proposition complète d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
+## Version 1 - Proposition simple d’un Device Simulator IoT en Node.js respectant les contraintes du cahier des charges :
 
     - CoAP over UDP (pas HTTP)
     - Port 5683
@@ -11,7 +11,7 @@
     - Simulation d’instabilité (latence, perte, offline)
     - Lancement simple
 
-## Arborescence : 
+### Arborescence : 
     device-simulator/
     │
     ├── package.json
@@ -19,7 +19,7 @@
     ├── main.js
     └── node_modules/
 
-## Librairie officielle :
+### Librairie officielle :
 
     - Node.js Foundation
     - CoAP (via le module npm coap)
@@ -50,9 +50,6 @@
     | Jamais contacté          | ⚪ Unknown     |
     NB : Le champ Last seen correspond au dernier timestamp valide reçu du device.
 
-# Version 2 - Découverte automatique des devices : Multicast UDP / CoAP announce
-    => Temps réel, pas besoin de scanner tout le réseau, plus proche d’un vrai système IoT.
-
 ## Résultat attendu : 
 ### Lancement du serveur CoAP sur le port 5683
 ### Exposition : 
@@ -65,7 +62,7 @@
     DEVICE_ID=device1 DEVICE_NAME="Salon" node main.js
     DEVICE_ID=device2 DEVICE_NAME="Cuisine" node main.js
 
-# Version 3 : Gestion multi-device, avec options
+## Version 2 : Gestion multi-device, avec options
 
 ### Exemples de création de devices multi-device + multi-port
     DEVICE_ID=device1 DEVICE_NAME="Salon" PORT=5683 node main.js
@@ -77,7 +74,7 @@
     INIT_TEMP=21 DEVICE_ID=Device2  DEVICE_NAME="Cuisine" PORT=5684 node main.js
     INIT_TEMP=22 DEVICE_ID=Device3  DEVICE_NAME="Salon" PORT=5685 node main.js
 
-# Version 4 : Simulation d'instabilité (CHAOS Mode)
+## Version 3 : Simulation d'instabilité (CHAOS Mode)
     Le simulateur permet de provoquer :
         - Latence artificielle (ex : +200ms, +1000ms)
         - Perte de paquets (ex : 10%)
