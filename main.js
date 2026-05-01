@@ -22,6 +22,8 @@ const deviceId = process.env.DEVICE_ID || crypto.randomUUID();
 const deviceName = process.env.DEVICE_NAME || "DeviceSim";
 
 let temperature = parseFloat(process.env.INIT_TEMP) || 22;
+let currentTemperature = parseFloat(process.env.INIT_TEMP) || 19.0;
+let targetTemperature = parseFloat(process.env.TARGET_TEMP) || 22.0;
 const startTime = Date.now();
 
 // =============================
@@ -75,6 +77,14 @@ function respondWithChaos(res, payloadBuilder) {
 }
 
 // =============================
+// Helpers
+// =============================
+
+function isHeating() {
+  return currentTemperature < targetTemperature;
+}
+
+// =============================
 // CoAP Server
 // =============================
 
@@ -101,7 +111,9 @@ server.on('request', (req, res) => {
   else if (req.url === '/temperature' && req.method === 'GET') {
 
   respondWithChaos(res, () => JSON.stringify({
-    value: temperature,
+    current: currentTemperature,
+    target: targetTemperature,
+    heating: isHeating(),
     ts: Date.now()
   }));
 }
@@ -118,27 +130,37 @@ else if (req.url === '/temperature' && req.method === 'PUT') {
     respondWithChaos(res, () => {
 
       try {
+
         const parsed = JSON.parse(body);
 
-        if (typeof parsed.value !== "number") {
+        if (typeof parsed.target !== "number") {
           res.code = '4.00';
-          return JSON.stringify({ error: "Invalid value" });
+
+          return JSON.stringify({
+            error: "Invalid target"
+          });
         }
 
-        temperature = parsed.value;
+        targetTemperature = parsed.target;
 
-        const responsePayload = {
-          value: temperature,
+        console.log(
+          `🎯 Target updated to ${targetTemperature}`
+        );
+
+        return JSON.stringify({
+          current: currentTemperature,
+          target: targetTemperature,
+          heating: isHeating(),
           ts: Date.now()
-        };
-
-        console.log(`🌡 Temperature updated to ${temperature}`);
-
-        return JSON.stringify(responsePayload);
+        });
 
       } catch {
+
         res.code = '4.00';
-        return JSON.stringify({ error: "Invalid JSON" });
+
+        return JSON.stringify({
+          error: "Invalid JSON"
+        });
       }
     });
   });
@@ -177,6 +199,25 @@ else if (req.url === '/temperature' && req.method === 'PUT') {
     res.end('Not Found');
   }
 });
+
+// =============================
+// Thermal Simulation Loop
+// =============================
+
+setInterval(() => {
+
+  if (currentTemperature < targetTemperature) {
+    currentTemperature += 0.5;
+  }
+
+  else if (currentTemperature > targetTemperature) {
+    currentTemperature -= 0.5;
+  }
+
+  currentTemperature =
+    parseFloat(currentTemperature.toFixed(1));
+
+}, 10000);
 
 server.listen(COAP_PORT, () => {
   console.log("=================================");
